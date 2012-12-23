@@ -1,10 +1,14 @@
+#include <string.h>
 #include <unistd.h>
 #include <dlfcn.h>
 #include <stdio.h>
 
+extern char **environ;
+
 #include "linalg_cblas.h"
 #include "macros.h"
 
+#define LINALG_NAME "linalg_cblas"
 
 static void* library_handle = NULL;
 
@@ -25,7 +29,21 @@ static ptr_cblas_zdotc_sub cblas_zdotc_sub_implementation = NULL;
 static ptr_cblas_dgemm     cblas_dgemm_implementation = NULL;
 
 
-void init_cblas(void)
+
+const char* get_library_name()
+{
+  const char* config_name = "LINEAR_ALGEBRA_CONFIG";
+  const int config_name_len = strlen(config_name);
+  const char* config = NULL;
+  for (char **env = environ; *env != NULL; env++) {
+    if (strncmp(config_name, *env, config_name_len) == 0)
+      config = *env;
+  }
+  return config + (config_name_len+1);
+}
+
+
+void init_cblas()
 {
     cblas_zdotc_sub_implementation = (ptr_cblas_zdotc_sub)
       dlsym(library_handle, "cblas_zdotc_sub");
@@ -37,12 +55,15 @@ void init_cblas(void)
 
 
 LINEAR_ALGEBRA_CONSTRUCTOR
-void init(void) { 
-  // const char *library_name = "libcblas.so";
-  const char *library_name = "libgslcblas.so";
+void init() { 
+  const char *library_name = get_library_name();
+  if (library_name == NULL) {
+    fprintf(stderr, LINALG_NAME ": No CBLAS implementation found.\n");
+    return;
+  }
   library_handle = dlopen(library_name, RTLD_LAZY);
   if (library_handle == NULL) {
-    fprintf(stderr, "Unable to load library %s, got %s.", library_name, dlerror());
+    fprintf(stderr, LINALG_NAME ": %s.\n", dlerror());
   } else {
     init_cblas();
   }
@@ -50,7 +71,7 @@ void init(void) {
 
 
 LINEAR_ALGEBRA_DESTRUCTOR
-void fini(void) {
+void fini() {
   printf("destructor\n");
   if (library_handle != NULL)
     dlclose(library_handle);
