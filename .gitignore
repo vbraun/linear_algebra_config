@@ -1,0 +1,10 @@
+*~
+plugin_*
+*Makefile.in
+*.o
+config.*
+*/.deps/*
+*/.libs/*
+*.la
+*.lo
+test/startup
