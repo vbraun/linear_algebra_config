@@ -28,9 +28,14 @@ enum CBLAS_SIDE  {
   CblasRight=142,
 };
 
-
-
 #define CBLAS_INDEX int
+
+
+/*
+ * ===========================================================================
+ * Error handling
+ * ===========================================================================
+ */
 
 int cblas_errprn(int ierr, int info, char *form, ...);
 
@@ -590,8 +595,6 @@ void cblas_zher2k(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
                   const void *alpha, const void *A, const int lda,
                   const void *B, const int ldb, const double beta,
                   void *C, const int ldc);
-
-int cblas_errprn(int ierr, int info, char *form, ...);
 
 
 #endif  /* LINEAR_ALGEBRA_CBLAS__H */

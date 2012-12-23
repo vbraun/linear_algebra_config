@@ -95,12 +95,21 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 liblinalg_cblas_la_LIBADD =
-am_liblinalg_cblas_la_OBJECTS = liblinalg_cblas_la-cblas.lo
+am_liblinalg_cblas_la_OBJECTS = liblinalg_cblas_la-setup.lo \
+	liblinalg_cblas_la-cblas.lo
 liblinalg_cblas_la_OBJECTS = $(am_liblinalg_cblas_la_OBJECTS)
 liblinalg_cblas_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(liblinalg_cblas_la_CFLAGS) $(CFLAGS) \
 	$(liblinalg_cblas_la_LDFLAGS) $(LDFLAGS) -o $@
+liblinalg_f77blas_la_LIBADD =
+am_liblinalg_f77blas_la_OBJECTS = liblinalg_f77blas_la-setup.lo \
+	liblinalg_f77blas_la-f77blas.lo
+liblinalg_f77blas_la_OBJECTS = $(am_liblinalg_f77blas_la_OBJECTS)
+liblinalg_f77blas_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(liblinalg_f77blas_la_CFLAGS) $(CFLAGS) \
+	$(liblinalg_f77blas_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -114,8 +123,10 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(liblinalg_cblas_la_SOURCES)
-DIST_SOURCES = $(liblinalg_cblas_la_SOURCES)
+SOURCES = $(liblinalg_cblas_la_SOURCES) \
+	$(liblinalg_f77blas_la_SOURCES)
+DIST_SOURCES = $(liblinalg_cblas_la_SOURCES) \
+	$(liblinalg_f77blas_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -148,6 +159,8 @@ ECHO_N = -n
 ECHO_T = 
 EGREP = /usr/bin/grep -E
 EXEEXT = 
+F77 = gfortran
+FFLAGS = -g -O2
 FGREP = /usr/bin/grep -F
 GREP = /usr/bin/grep
 HAVE_VISIBILITY = 1
@@ -194,6 +207,7 @@ abs_top_srcdir = /home/vbraun/Code/linear_algebra
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
+ac_ct_F77 = gfortran
 am__include = include
 am__leading_dot = .
 am__quote = 
@@ -243,18 +257,26 @@ target_vendor = unknown
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-lib_LTLIBRARIES = liblinalg_cblas.la
+lib_LTLIBRARIES = liblinalg_cblas.la liblinalg_f77blas.la
 nobase_include_headers = \
-	linalg_cblas.h 
+	linalg_cblas.h linalg_f77blas.h
 
 liblinalg_cblas_la_SOURCES = \
-	macros.h cblas.c
+	setup.h setup.c macros.h cblas.c
 
 liblinalg_cblas_la_CFLAGS = \
 	-DBUILDING_LINEAR_ALGEBRA_LIBRARY \
 	-DCONFIG_H $(CFLAG_VISIBILITY)
 
 liblinalg_cblas_la_LDFLAGS = -ldl
+liblinalg_f77blas_la_SOURCES = \
+	setup.h setup.c macros.h f77blas.c
+
+liblinalg_f77blas_la_CFLAGS = \
+	-DBUILDING_LINEAR_ALGEBRA_LIBRARY \
+	-DCONFIG_H $(CFLAG_VISIBILITY)
+
+liblinalg_f77blas_la_LDFLAGS = -ldl
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -341,6 +363,8 @@ clean-libLTLIBRARIES:
 	}
 liblinalg_cblas.la: $(liblinalg_cblas_la_OBJECTS) $(liblinalg_cblas_la_DEPENDENCIES) $(EXTRA_liblinalg_cblas_la_DEPENDENCIES) 
 	$(liblinalg_cblas_la_LINK) -rpath $(libdir) $(liblinalg_cblas_la_OBJECTS) $(liblinalg_cblas_la_LIBADD) $(LIBS)
+liblinalg_f77blas.la: $(liblinalg_f77blas_la_OBJECTS) $(liblinalg_f77blas_la_DEPENDENCIES) $(EXTRA_liblinalg_f77blas_la_DEPENDENCIES) 
+	$(liblinalg_f77blas_la_LINK) -rpath $(libdir) $(liblinalg_f77blas_la_OBJECTS) $(liblinalg_f77blas_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -349,6 +373,9 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/liblinalg_cblas_la-cblas.Plo
+include ./$(DEPDIR)/liblinalg_cblas_la-setup.Plo
+include ./$(DEPDIR)/liblinalg_f77blas_la-f77blas.Plo
+include ./$(DEPDIR)/liblinalg_f77blas_la-setup.Plo
 
 .c.o:
 	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -371,12 +398,33 @@ include ./$(DEPDIR)/liblinalg_cblas_la-cblas.Plo
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LTCOMPILE) -c -o $@ $<
 
+liblinalg_cblas_la-setup.lo: setup.c
+	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_cblas_la_CFLAGS) $(CFLAGS) -MT liblinalg_cblas_la-setup.lo -MD -MP -MF $(DEPDIR)/liblinalg_cblas_la-setup.Tpo -c -o liblinalg_cblas_la-setup.lo `test -f 'setup.c' || echo '$(srcdir)/'`setup.c
+	$(am__mv) $(DEPDIR)/liblinalg_cblas_la-setup.Tpo $(DEPDIR)/liblinalg_cblas_la-setup.Plo
+#	source='setup.c' object='liblinalg_cblas_la-setup.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_cblas_la_CFLAGS) $(CFLAGS) -c -o liblinalg_cblas_la-setup.lo `test -f 'setup.c' || echo '$(srcdir)/'`setup.c
+
 liblinalg_cblas_la-cblas.lo: cblas.c
 	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_cblas_la_CFLAGS) $(CFLAGS) -MT liblinalg_cblas_la-cblas.lo -MD -MP -MF $(DEPDIR)/liblinalg_cblas_la-cblas.Tpo -c -o liblinalg_cblas_la-cblas.lo `test -f 'cblas.c' || echo '$(srcdir)/'`cblas.c
 	$(am__mv) $(DEPDIR)/liblinalg_cblas_la-cblas.Tpo $(DEPDIR)/liblinalg_cblas_la-cblas.Plo
 #	source='cblas.c' object='liblinalg_cblas_la-cblas.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_cblas_la_CFLAGS) $(CFLAGS) -c -o liblinalg_cblas_la-cblas.lo `test -f 'cblas.c' || echo '$(srcdir)/'`cblas.c
+
+liblinalg_f77blas_la-setup.lo: setup.c
+	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_f77blas_la_CFLAGS) $(CFLAGS) -MT liblinalg_f77blas_la-setup.lo -MD -MP -MF $(DEPDIR)/liblinalg_f77blas_la-setup.Tpo -c -o liblinalg_f77blas_la-setup.lo `test -f 'setup.c' || echo '$(srcdir)/'`setup.c
+	$(am__mv) $(DEPDIR)/liblinalg_f77blas_la-setup.Tpo $(DEPDIR)/liblinalg_f77blas_la-setup.Plo
+#	source='setup.c' object='liblinalg_f77blas_la-setup.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_f77blas_la_CFLAGS) $(CFLAGS) -c -o liblinalg_f77blas_la-setup.lo `test -f 'setup.c' || echo '$(srcdir)/'`setup.c
+
+liblinalg_f77blas_la-f77blas.lo: f77blas.c
+	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_f77blas_la_CFLAGS) $(CFLAGS) -MT liblinalg_f77blas_la-f77blas.lo -MD -MP -MF $(DEPDIR)/liblinalg_f77blas_la-f77blas.Tpo -c -o liblinalg_f77blas_la-f77blas.lo `test -f 'f77blas.c' || echo '$(srcdir)/'`f77blas.c
+	$(am__mv) $(DEPDIR)/liblinalg_f77blas_la-f77blas.Tpo $(DEPDIR)/liblinalg_f77blas_la-f77blas.Plo
+#	source='f77blas.c' object='liblinalg_f77blas_la-f77blas.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(liblinalg_f77blas_la_CFLAGS) $(CFLAGS) -c -o liblinalg_f77blas_la-f77blas.lo `test -f 'f77blas.c' || echo '$(srcdir)/'`f77blas.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

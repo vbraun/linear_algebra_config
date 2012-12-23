@@ -50,7 +50,7 @@ POST_UNINSTALL = :
 build_triplet = x86_64-unknown-linux-gnu
 host_triplet = x86_64-unknown-linux-gnu
 target_triplet = x86_64-unknown-linux-gnu
-check_PROGRAMS = startup$(EXEEXT)
+check_PROGRAMS = startup_cblas$(EXEEXT) startup_f77blas$(EXEEXT)
 subdir = test
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/depcomp
@@ -65,12 +65,20 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/library_src/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_startup_OBJECTS = startup.$(OBJEXT)
-startup_OBJECTS = $(am_startup_OBJECTS)
-startup_DEPENDENCIES = ../library_src/liblinalg_cblas.la
-startup_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(startup_LDFLAGS) \
-	$(LDFLAGS) -o $@
+am_startup_cblas_OBJECTS = startup_cblas.$(OBJEXT)
+startup_cblas_OBJECTS = $(am_startup_cblas_OBJECTS)
+startup_cblas_DEPENDENCIES =  \
+	../library_src/liblinalg_cblas.la
+startup_cblas_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(startup_cblas_LDFLAGS) $(LDFLAGS) -o $@
+am_startup_f77blas_OBJECTS = startup_f77blas.$(OBJEXT)
+startup_f77blas_OBJECTS = $(am_startup_f77blas_OBJECTS)
+startup_f77blas_DEPENDENCIES =  \
+	../library_src/liblinalg_f77blas.la
+startup_f77blas_LINK = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(F77LD) $(AM_FFLAGS) $(FFLAGS) \
+	$(startup_f77blas_LDFLAGS) $(LDFLAGS) -o $@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -83,8 +91,15 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(startup_SOURCES)
-DIST_SOURCES = $(startup_SOURCES)
+F77COMPILE = $(F77) $(AM_FFLAGS) $(FFLAGS)
+LTF77COMPILE = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(F77) $(AM_FFLAGS) $(FFLAGS)
+F77LD = $(F77)
+F77LINK = $(LIBTOOL) --tag=F77 $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(F77LD) $(AM_FFLAGS) $(FFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+SOURCES = $(startup_cblas_SOURCES) $(startup_f77blas_SOURCES)
+DIST_SOURCES = $(startup_cblas_SOURCES) $(startup_f77blas_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -92,6 +107,10 @@ am__can_run_installinfo = \
   esac
 ETAGS = etags
 CTAGS = ctags
+am__tty_colors_dummy = \
+  mgn= red= grn= lgn= blu= brg= std=; \
+  am__color_tests=no
+am__tty_colors = $(am__tty_colors_dummy)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/vbraun/Code/linear_algebra/missing --run aclocal-1.12
 AMTAR = $${TAR-tar}
@@ -102,7 +121,7 @@ AUTOMAKE = ${SHELL} /home/vbraun/Code/linear_algebra/missing --run automake-1.12
 AWK = gawk
 CC = gcc -std=gnu99
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2
+CFLAGS = -Wall -g -O0
 CFLAG_VISIBILITY = -fvisibility=hidden
 CPP = gcc -std=gnu99 -E
 CPPFLAGS = 
@@ -117,6 +136,8 @@ ECHO_N = -n
 ECHO_T = 
 EGREP = /usr/bin/grep -E
 EXEEXT = 
+F77 = gfortran
+FFLAGS = -g -O2
 FGREP = /usr/bin/grep -F
 GREP = /usr/bin/grep
 HAVE_VISIBILITY = 1
@@ -163,6 +184,7 @@ abs_top_srcdir = /home/vbraun/Code/linear_algebra
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
+ac_ct_F77 = gfortran
 am__include = include
 am__leading_dot = .
 am__quote = 
@@ -213,14 +235,19 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 DEFAULT_INCLUDES = -I../library_src
-startup_SOURCES = startup.c
-# test_CFLAGS = 
-startup_LDADD = ../library_src/liblinalg_cblas.la
-startup_LDFLAGS = -ldl
+TESTS = \
+	startup.sh
+
+startup_cblas_SOURCES = startup_cblas.c
+startup_cblas_LDADD = ../library_src/liblinalg_cblas.la
+startup_cblas_LDFLAGS = -ldl
+startup_f77blas_SOURCES = startup_f77blas.f
+startup_f77blas_LDADD = ../library_src/liblinalg_f77blas.la
+startup_f77blas_LDFLAGS = -ldl
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .c .f .lo .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -260,9 +287,12 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-startup$(EXEEXT): $(startup_OBJECTS) $(startup_DEPENDENCIES) $(EXTRA_startup_DEPENDENCIES) 
-	@rm -f startup$(EXEEXT)
-	$(startup_LINK) $(startup_OBJECTS) $(startup_LDADD) $(LIBS)
+startup_cblas$(EXEEXT): $(startup_cblas_OBJECTS) $(startup_cblas_DEPENDENCIES) $(EXTRA_startup_cblas_DEPENDENCIES) 
+	@rm -f startup_cblas$(EXEEXT)
+	$(startup_cblas_LINK) $(startup_cblas_OBJECTS) $(startup_cblas_LDADD) $(LIBS)
+startup_f77blas$(EXEEXT): $(startup_f77blas_OBJECTS) $(startup_f77blas_DEPENDENCIES) $(EXTRA_startup_f77blas_DEPENDENCIES) 
+	@rm -f startup_f77blas$(EXEEXT)
+	$(startup_f77blas_LINK) $(startup_f77blas_OBJECTS) $(startup_f77blas_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -270,7 +300,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/startup.Po
+include ./$(DEPDIR)/startup_cblas.Po
 
 .c.o:
 	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -292,6 +322,15 @@ include ./$(DEPDIR)/startup.Po
 #	source='$<' object='$@' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LTCOMPILE) -c -o $@ $<
+
+.f.o:
+	$(F77COMPILE) -c -o $@ $<
+
+.f.obj:
+	$(F77COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.f.lo:
+	$(LTF77COMPILE) -c -o $@ $<
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -365,6 +404,99 @@ cscopelist:  $(HEADERS) $(SOURCES) $(LISP)
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
+check-TESTS: $(TESTS)
+	@failed=0; all=0; xfail=0; xpass=0; skip=0; \
+	srcdir=$(srcdir); export srcdir; \
+	list=' $(TESTS) '; \
+	$(am__tty_colors); \
+	if test -n "$$list"; then \
+	  for tst in $$list; do \
+	    if test -f ./$$tst; then dir=./; \
+	    elif test -f $$tst; then dir=; \
+	    else dir="$(srcdir)/"; fi; \
+	    if $(TESTS_ENVIRONMENT) $${dir}$$tst $(AM_TESTS_FD_REDIRECT); then \
+	      all=`expr $$all + 1`; \
+	      case " $(XFAIL_TESTS) " in \
+	      *[\ \	]$$tst[\ \	]*) \
+		xpass=`expr $$xpass + 1`; \
+		failed=`expr $$failed + 1`; \
+		col=$$red; res=XPASS; \
+	      ;; \
+	      *) \
+		col=$$grn; res=PASS; \
+	      ;; \
+	      esac; \
+	    elif test $$? -ne 77; then \
+	      all=`expr $$all + 1`; \
+	      case " $(XFAIL_TESTS) " in \
+	      *[\ \	]$$tst[\ \	]*) \
+		xfail=`expr $$xfail + 1`; \
+		col=$$lgn; res=XFAIL; \
+	      ;; \
+	      *) \
+		failed=`expr $$failed + 1`; \
+		col=$$red; res=FAIL; \
+	      ;; \
+	      esac; \
+	    else \
+	      skip=`expr $$skip + 1`; \
+	      col=$$blu; res=SKIP; \
+	    fi; \
+	    echo "$${col}$$res$${std}: $$tst"; \
+	  done; \
+	  if test "$$all" -eq 1; then \
+	    tests="test"; \
+	    All=""; \
+	  else \
+	    tests="tests"; \
+	    All="All "; \
+	  fi; \
+	  if test "$$failed" -eq 0; then \
+	    if test "$$xfail" -eq 0; then \
+	      banner="$$All$$all $$tests passed"; \
+	    else \
+	      if test "$$xfail" -eq 1; then failures=failure; else failures=failures; fi; \
+	      banner="$$All$$all $$tests behaved as expected ($$xfail expected $$failures)"; \
+	    fi; \
+	  else \
+	    if test "$$xpass" -eq 0; then \
+	      banner="$$failed of $$all $$tests failed"; \
+	    else \
+	      if test "$$xpass" -eq 1; then passes=pass; else passes=passes; fi; \
+	      banner="$$failed of $$all $$tests did not behave as expected ($$xpass unexpected $$passes)"; \
+	    fi; \
+	  fi; \
+	  dashes="$$banner"; \
+	  skipped=""; \
+	  if test "$$skip" -ne 0; then \
+	    if test "$$skip" -eq 1; then \
+	      skipped="($$skip test was not run)"; \
+	    else \
+	      skipped="($$skip tests were not run)"; \
+	    fi; \
+	    test `echo "$$skipped" | wc -c` -le `echo "$$banner" | wc -c` || \
+	      dashes="$$skipped"; \
+	  fi; \
+	  report=""; \
+	  if test "$$failed" -ne 0 && test -n "$(PACKAGE_BUGREPORT)"; then \
+	    report="Please report to $(PACKAGE_BUGREPORT)"; \
+	    test `echo "$$report" | wc -c` -le `echo "$$banner" | wc -c` || \
+	      dashes="$$report"; \
+	  fi; \
+	  dashes=`echo "$$dashes" | sed s/./=/g`; \
+	  if test "$$failed" -eq 0; then \
+	    col="$$grn"; \
+	  else \
+	    col="$$red"; \
+	  fi; \
+	  echo "$${col}$$dashes$${std}"; \
+	  echo "$${col}$$banner$${std}"; \
+	  test -z "$$skipped" || echo "$${col}$$skipped$${std}"; \
+	  test -z "$$report" || echo "$${col}$$report$${std}"; \
+	  echo "$${col}$$dashes$${std}"; \
+	  test "$$failed" -eq 0; \
+	else :; fi
+
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
@@ -397,6 +529,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
 all-am: Makefile
 installdirs:
@@ -503,7 +636,7 @@ uninstall-am:
 
 .MAKE: check-am install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean \
+.PHONY: CTAGS GTAGS all all-am check check-TESTS check-am clean \
 	clean-checkPROGRAMS clean-generic clean-libtool cscopelist \
 	ctags distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \

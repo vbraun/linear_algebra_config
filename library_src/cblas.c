@@ -1,14 +1,13 @@
-#include <string.h>
-#include <unistd.h>
 #include <dlfcn.h>
 #include <stdio.h>
 
-extern char **environ;
+#define LINALG_NAME "linalg_cblas"
 
 #include "linalg_cblas.h"
 #include "macros.h"
+#include "setup.h"
 
-#define LINALG_NAME "linalg_cblas"
+
 
 static void* library_handle = NULL;
 
@@ -29,18 +28,6 @@ static ptr_cblas_zdotc_sub cblas_zdotc_sub_implementation = NULL;
 static ptr_cblas_dgemm     cblas_dgemm_implementation = NULL;
 
 
-
-const char* get_library_name()
-{
-  const char* config_name = "LINEAR_ALGEBRA_CONFIG";
-  const int config_name_len = strlen(config_name);
-  const char* config = NULL;
-  for (char **env = environ; *env != NULL; env++) {
-    if (strncmp(config_name, *env, config_name_len) == 0)
-      config = *env;
-  }
-  return config + (config_name_len+1);
-}
 
 
 void init_cblas()

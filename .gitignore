@@ -7,4 +7,8 @@ config.*
 */.libs/*
 *.la
 *.lo
-test/startup
+test/startup_*blas
+
+
+# TODO
+library_src/f2c-blas/

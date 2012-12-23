@@ -1,9 +1,18 @@
 DEFAULT_INCLUDES = -I@top_builddir@/library_src
 
-check_PROGRAMS = \
-	startup   # test library startup
+TESTS = \
+	startup.sh
 
-startup_SOURCES = startup.c
-# test_CFLAGS = 
-startup_LDADD = @top_builddir@/library_src/liblinalg_cblas.la
-startup_LDFLAGS = -ldl
+check_PROGRAMS = \
+	startup_cblas startup_f77blas   # test library startup
+
+startup_cblas_SOURCES = startup_cblas.c
+startup_cblas_LDADD = @top_builddir@/library_src/liblinalg_cblas.la
+startup_cblas_LDFLAGS = -ldl
+
+
+startup_f77blas_SOURCES = startup_f77blas.f
+startup_f77blas_LDADD = @top_builddir@/library_src/liblinalg_f77blas.la
+startup_f77blas_LDFLAGS = -ldl
+
+CFLAGS = -Wall -g -O0
